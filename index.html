@@ -1,397 +1,279 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>輕鬆麻將 (16張)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            background-color: #1a472a; /* Classic Mahjong green */
-            background-image: radial-gradient(circle, #2a5a3a 0%, #10301a 100%);
-            color: white;
-            font-family: "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif;
-            touch-action: manipulation; /* Prevent double-tap zoom on iPad */
-            overflow: hidden; /* Prevent scrolling */
-        }
-        
-        .tile-font {
-            /* Apple Color Emoji renders Mahjong tiles beautifully on iPads/Macs */
-            font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
-            line-height: 1;
-        }
-
-        .tile {
-            background-color: #fdfbf7;
-            color: #000;
-            border-radius: 8px;
-            box-shadow: 2px 4px 6px rgba(0,0,0,0.4), inset -1px -2px 4px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            user-select: none;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .player-tile {
-            font-size: 6.5vw; /* Scales with iPad width, approx 60-70px */
-            width: 5.2vw;
-            height: 7.2vw;
-            cursor: pointer;
-        }
-
-        .player-tile.discard-mode:hover, .player-tile.discard-mode:active {
-            transform: translateY(-15px);
-            box-shadow: 2px 15px 10px rgba(0,0,0,0.3);
-            border: 2px solid #fbbf24; /* Yellow highlight on hover/touch */
-        }
-
-        .discard-tile {
-            font-size: 3.5vw;
-            width: 3vw;
-            height: 4vw;
-            border-radius: 4px;
-            box-shadow: 1px 2px 3px rgba(0,0,0,0.3);
-        }
-
-        .discard-latest {
-            border: 2px solid #fef08a;
-            box-shadow: 0 0 10px #fef08a;
-            transform: scale(1.05);
-        }
-
-        .btn-large {
-            background: linear-gradient(to bottom, #fde047, #eab308);
-            color: #713f12;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.5);
-            text-shadow: 0 1px 1px rgba(255,255,255,0.5);
-            transition: all 0.1s;
-        }
-        
-        .btn-large:active {
-            transform: translateY(2px);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-        }
-
-        .btn-disabled {
-            background: #9ca3af;
-            color: #4b5563;
-            box-shadow: none;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        .pulse-anim {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(253, 224, 71, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(253, 224, 71, 0); }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="麻將">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>麻將</title>
+<style>
+:root{--hh:10vh;--felt:#1f5a3d;--dark:#12331f;--gold:#ffd86b}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--felt);color:#fff;font-family:"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+#app{height:100dvh;display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 12px;background:var(--dark);font-size:18px}
+header button{font-size:16px;padding:6px 14px}
+main{flex:1;min-height:0;display:grid;grid-template-areas:"t t t" "l c r";grid-template-rows:auto 1fr;grid-template-columns:minmax(70px,18vw) 1fr minmax(70px,18vw);gap:6px;padding:6px}
+.top{grid-area:t}.left{grid-area:l}.right{grid-area:r}#center{grid-area:c}
+.opp{--th:clamp(20px,3.6vh,34px);background:rgba(0,0,0,.18);border-radius:10px;padding:6px;min-width:0;overflow:hidden}
+.nm{font-size:16px;margin-bottom:4px}.nm.turn{color:var(--gold);font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:2px 6px;margin-bottom:3px}
+.meld{display:inline-flex;gap:1px}
+#center{--th:clamp(28px,5vh,46px);background:rgba(0,0,0,.28);border-radius:10px;padding:8px;overflow:auto}
+#pool{display:flex;flex-wrap:wrap;gap:3px;align-content:flex-start}
+footer{background:var(--dark);padding:6px 8px 8px}
+#msg{min-height:1.4em;text-align:center;color:var(--gold);font-size:clamp(18px,2.6vh,26px);margin-bottom:4px}
+#acts{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:6px}
+#acts button{font-size:clamp(20px,3vh,28px);min-height:52px;padding:8px 24px;background:var(--gold);color:#3a2a00;font-weight:700}
+button{border:0;border-radius:12px;font-family:inherit;background:#e8e1c8;color:#222;cursor:pointer}
+#melds0{--th:clamp(26px,5vh,44px);display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;margin-bottom:4px}
+#hand{--th:var(--hh);display:flex;flex-wrap:wrap;justify-content:center;gap:3px}
+.tile{flex:none;position:relative;width:calc(var(--th)*.74);height:var(--th);background:#fffdf3;border:1px solid #9a9170;border-radius:calc(var(--th)*.1);box-shadow:0 calc(var(--th)*.04) 0 #b5a77a;display:inline-flex;align-items:center;justify-content:center;font-size:calc(var(--th)*.42);overflow:hidden;color:#222}
+.tile img{width:100%;height:100%;object-fit:contain;pointer-events:none}
+.tile img+.tx{display:none}
+.tx{display:flex;flex-direction:column;align-items:center;line-height:1.05;font-weight:700}
+.tx i{font-style:normal;font-size:.62em}
+.cs0,.zr{color:#c0281c}.cs1{color:#1f4fa8}.cs2,.zg{color:#1c7a3a}.zk{color:#222}.fl{color:#8a3aa8;background:#fff6ea}
+.back{background:repeating-linear-gradient(45deg,#2a7a52,#2a7a52 4px,#236644 4px,#236644 8px);border-color:#14402a;box-shadow:none}
+.last{outline:3px solid var(--gold);outline-offset:-1px}
+#hand .fresh{margin-left:calc(var(--th)*.3)}
+#hand.can .tile{cursor:pointer}
+#hand .sel{transform:translateY(-14%);outline:4px solid var(--gold);outline-offset:-2px}
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:9}
+#ov[hidden]{display:none}
+#ov div{background:#fffdf3;color:#222;border-radius:18px;padding:28px 36px;text-align:center}
+#ov h1{margin:0 0 20px;font-size:clamp(28px,5vh,44px)}
+#ov button{font-size:24px;padding:12px 28px;margin:6px;background:var(--felt);color:#fff}
+</style>
 </head>
-<body class="h-screen w-screen flex flex-col relative">
+<body>
+<div id="app">
+  <header><b>🀄 麻將</b><span>牌牆剩 <b id="wall">0</b> 張</span><button onclick="newGame()">重新開始</button></header>
+  <main>
+    <section id="p2" class="opp top"></section>
+    <section id="p3" class="opp left"></section>
+    <section id="center"><div id="pool"></div></section>
+    <section id="p1" class="opp right"></section>
+  </main>
+  <footer>
+    <div id="msg"></div>
+    <div id="acts"></div>
+    <div id="melds0"></div>
+    <div id="hand"></div>
+  </footer>
+</div>
+<div id="ov" hidden><div><h1 id="ovt"></h1><button onclick="newGame()">再玩一局</button><button onclick="$('ov').hidden=true">看一下牌面</button></div></div>
 
-    <!-- Top Status Bar -->
-    <header class="flex justify-between items-center p-4 bg-black/30 text-xl font-bold">
-        <div>剩餘牌數: <span id="deck-count" class="text-yellow-300 text-2xl">--</span></div>
-        <button onclick="confirmRestart()" class="px-4 py-2 bg-red-700/80 hover:bg-red-600 rounded-lg text-white shadow">重新開始</button>
-    </header>
+<script>
+/* ===== 設定（之後要做設定畫面，就是改這個物件）===== */
+const CONFIG={
+  handTileHeightVh:10,   // 自己手牌高度占螢幕高度的 %
+  aiDelayMs:800,         // 電腦出牌的等待時間（毫秒）
+  useFlowers:true,       // 是否使用花牌（補花）
+  allowRon:false,        // 能否胡別人打出的牌（放槍胡）。false = 只能自摸
+  multiRon:true,         // allowRon 開啟時，多人胡同一張是否都算胡
+  aiChiRate:.3, aiPonRate:.6, aiGangRate:.5,
+  playerNames:['你','右家','對家','左家'],
+  /* 麻將圖片：把 useImages 改 true，圖片放在 imageDir 資料夾。
+     檔名：萬 m1~m9、筒 p1~p9、條 s1~s9、
+           字 z1~z7（東南西北中發白）、花 f1~f8（春夏秋冬梅蘭竹菊）、牌背 back
+     找不到圖片的牌會自動改回文字。 */
+  useImages:false, imageDir:'tiles/', imageExt:'.png'
+};
 
-    <!-- Discard Area (Center) -->
-    <main class="flex-1 flex flex-col items-center justify-center p-4">
-        <div class="bg-black/20 rounded-xl w-11/12 max-w-5xl h-[40vh] p-4 overflow-y-auto flex flex-wrap content-start gap-1 shadow-inner border border-white/10" id="discard-pile">
-            <!-- Discarded tiles will appear here -->
-        </div>
-    </main>
+/* ===== 牌的顯示 ===== */
+const $=id=>document.getElementById(id);
+const NUM='一二三四五六七八九',SUIT=['萬','筒','條'],HON='東南西北中發白',FL='春夏秋冬梅蘭竹菊';
+// 牌編號：0-8 萬、9-17 筒、18-26 條、27-33 字、34-41 花
+const key=t=>t<27?'mps'[t/9|0]+(t%9+1):t<34?'z'+(t-26):'f'+(t-33);
+const nm=t=>t<27?NUM[t%9]+SUIT[t/9|0]:t<34?HON[t-27]:FL[t-34];
+function face(t){
+  if(t<27)return{c:'cs'+(t/9|0),h:`<b>${NUM[t%9]}</b><i>${SUIT[t/9|0]}</i>`};
+  if(t<34)return{c:t==31?'zr':t==32?'zg':'zk',h:`<b>${HON[t-27]}</b>`};
+  return{c:'fl',h:`<b>${FL[t-34]}</b><i>花</i>`};
+}
+function img(k){return CONFIG.useImages?`<img src="${CONFIG.imageDir}${k}${CONFIG.imageExt}" alt="" draggable="false" onerror="this.remove()">`:''}
+function T(t,cls='',i=''){const f=face(t);return `<div class="tile ${f.c} ${cls}" data-i="${i}">${img(key(t))}<span class="tx">${f.h}</span></div>`}
+const B=()=>`<div class="tile back">${img('back')}</div>`;
 
-    <!-- Player Area (Bottom) -->
-    <section class="h-[35vh] flex flex-col justify-end pb-6 px-2 bg-gradient-to-t from-black/60 to-transparent">
-        
-        <!-- Status & Controls -->
-        <div class="flex justify-between items-end mb-4 px-8 max-w-7xl mx-auto w-full">
-            <div id="status-text" class="text-3xl md:text-4xl font-extrabold tracking-wide text-yellow-300 drop-shadow-md">
-                準備開始遊戲...
-            </div>
-            <div class="flex gap-4">
-                <button id="btn-win" onclick="declareWin()" class="hidden btn-large text-2xl font-bold py-3 px-8 rounded-2xl">
-                    我胡了！
-                </button>
-                <button id="btn-draw" onclick="playerDraw()" class="btn-large pulse-anim text-3xl font-bold py-4 px-10 rounded-2xl">
-                    摸牌
-                </button>
-            </div>
-        </div>
+/* ===== 遊戲邏輯 ===== */
+let G;
+const N=CONFIG.playerNames;
+const asc=(a,b)=>a-b;
+const cnt=h=>{const c=Array(34).fill(0);h.forEach(t=>t<34&&c[t]++);return c};
+function shuffle(a){for(let i=a.length;i>1;){const j=Math.random()*i--|0;[a[i],a[j]]=[a[j],a[i]]}return a}
+function mel(c){
+  const i=c.findIndex(x=>x>0);if(i<0)return true;
+  if(c[i]>=3){c[i]-=3;const r=mel(c);c[i]+=3;if(r)return true}
+  if(i<27&&i%9<7&&c[i+1]&&c[i+2]){c[i]--;c[i+1]--;c[i+2]--;const r=mel(c);c[i]++;c[i+1]++;c[i+2]++;if(r)return true}
+  return false;
+}
+function canWin(h){ // 手牌張數須為 3n+2：n 組順/刻 + 一對將（吃碰槓的牌已不在手牌內）
+  if(h.length%3!==2)return false;
+  const c=cnt(h);
+  for(let i=0;i<34;i++)if(c[i]>=2){c[i]-=2;const r=mel(c);c[i]+=2;if(r)return true}
+  return false;
+}
+function chiOpts(h,t){
+  if(t>26)return[];const c=cnt(h),r=t%9,o=[];
+  if(r>=2&&c[t-2]&&c[t-1])o.push([t-2,t-1]);
+  if(r>=1&&r<=7&&c[t-1]&&c[t+1])o.push([t-1,t+1]);
+  if(r<=6&&c[t+1]&&c[t+2])o.push([t+1,t+2]);
+  return o;
+}
+const later=f=>{const g=G;setTimeout(()=>{if(g===G&&!G.over)f()},CONFIG.aiDelayMs)};
+const set=(acts,m)=>{G.actions=acts;G.msg=m};
+const A=i=>{const f=G.actions[i][1];G.actions=[];f()};
 
-        <!-- Player Hand -->
-        <div class="flex justify-center items-end gap-[0.2vw] w-full" id="player-hand">
-            <!-- Tiles will be rendered here -->
-        </div>
-    </section>
+function newGame(){
+  const w=[];
+  for(let t=0;t<34;t++)for(let k=0;k<4;k++)w.push(t);
+  if(CONFIG.useFlowers)for(let t=34;t<42;t++)w.push(t);
+  shuffle(w);
+  G={wall:w,hands:[[],[],[],[]],melds:[[],[],[],[]],flowers:[[],[],[],[]],pool:[],cur:0,phase:'',actions:[],over:false,msg:'',last:null,fresh:false,sel:-1};
+  for(let p=0;p<4;p++)for(let k=0;k<16;k++)G.hands[p].push(G.wall.pop());
+  for(let p=0;p<4;p++){const h=G.hands[p];let i;
+    while((i=h.findIndex(t=>t>=34))>=0){G.flowers[p].push(h.splice(i,1)[0]);h.push(G.wall.shift())}
+    h.sort(asc)}
+  $('ov').hidden=true;
+  turn(0,false);
+}
+function draw(p,back){ // back=true 從牌牆尾端補牌；摸到花自動補花
+  let t;
+  do{
+    if(!G.wall.length)return null;
+    t=back?G.wall.shift():G.wall.pop();
+    if(t>=34){G.flowers[p].push(t);back=true}
+  }while(t>=34);
+  return t;
+}
+function turn(p,back){
+  G.cur=p;
+  const t=draw(p,back);
+  if(t===null)return end([]);
+  G.hands[p].sort(asc);G.hands[p].push(t);G.fresh=true;G.sel=-1;
+  if(p){
+    if(canWin(G.hands[p]))return end([p]);
+    G.msg=N[p]+'思考中…';render();later(()=>aiDiscard(p));
+  }else humanTurn();
+}
+function humanTurn(){
+  G.phase='discard';
+  const h=G.hands[0],c=cnt(h),acts=[],w=canWin(h);
+  if(w)acts.push(['🎉 胡牌！',()=>end([0])]);
+  for(let t=0;t<34;t++)if(c[t]==4)acts.push(['暗槓 '+nm(t),()=>kong(0,t,'an')]);
+  G.melds[0].forEach(m=>{if(m.type=='pon'&&c[m.t]>0)acts.push(['加槓 '+nm(m.t),()=>kong(0,m.t,'add')])});
+  set(acts,w?'你可以胡牌了！':'輪到你了，點一張牌選取');
+  render();
+}
+function kong(p,t,kind){
+  const h=G.hands[p];
+  if(kind=='an'){for(let k=0;k<4;k++)h.splice(h.indexOf(t),1);G.melds[p].push({type:'an',t,tiles:[t,t,t,t]})}
+  else{h.splice(h.indexOf(t),1);const m=G.melds[p].find(m=>m.type=='pon'&&m.t==t);m.type='gang';m.tiles.push(t)}
+  turn(p,true);
+}
+function discard(p,t){
+  const h=G.hands[p];h.splice(h.indexOf(t),1);h.sort(asc);
+  G.pool.push({t,p});G.last=G.pool.length-1;G.fresh=false;G.phase='';G.sel=-1;
+  set([],N[p]+'打出 '+nm(t));
+  claims(p,t);
+}
+function claims(p,t){
+  if(CONFIG.allowRon){
+    const ws=[1,2,3].map(k=>(p+k)%4).filter(q=>canWin([...G.hands[q],t]));
+    const go=l=>{if(l.length){l.forEach(q=>G.hands[q].push(t));end(l)}else pons(p,t)};
+    if(ws.includes(0)){
+      const ai=ws.filter(q=>q);
+      set([['🎉 胡！',()=>go(CONFIG.multiRon?ws:[0])],['過',()=>go(CONFIG.multiRon?ai:ai.slice(0,1))]],'你可以胡這張牌！');
+      return render();
+    }
+    if(ws.length)return go(CONFIG.multiRon?ws:ws.slice(0,1));
+  }
+  pons(p,t);
+}
+function pons(p,t){
+  const h=G.hands[0],c=cnt(h),acts=[];
+  if(p!==0){
+    if(c[t]>=3)acts.push(['槓 '+nm(t),()=>claim(0,'gang',t,[t,t,t])]);
+    if(c[t]>=2)acts.push(['碰 '+nm(t),()=>claim(0,'pon',t,[t,t])]);
+    if(p==3)chiOpts(h,t).forEach(o=>acts.push(['吃 '+o.map(nm).join(' '),()=>claim(0,'chi',t,o)]));
+  }
+  if(acts.length){acts.push(['過',()=>aiClaims(p,t)]);set(acts,N[p]+'打出 '+nm(t)+'，要吃、碰或槓嗎？');return render()}
+  aiClaims(p,t);
+}
+function aiClaims(p,t){
+  const C=CONFIG;
+  for(let k=1;k<4;k++){
+    const q=(p+k)%4;if(!q)continue;const c=cnt(G.hands[q]);
+    if(c[t]>=3&&Math.random()<C.aiGangRate)return claim(q,'gang',t,[t,t,t]);
+    if(c[t]>=2&&Math.random()<C.aiPonRate)return claim(q,'pon',t,[t,t]);
+  }
+  const q=(p+1)%4;
+  if(q){const o=chiOpts(G.hands[q],t);if(o.length&&Math.random()<C.aiChiRate)return claim(q,'chi',t,o[Math.random()*o.length|0])}
+  render();later(()=>turn((p+1)%4,false));
+}
+function claim(q,type,t,use){
+  const h=G.hands[q];
+  use.forEach(x=>h.splice(h.indexOf(x),1));
+  G.pool.pop();G.last=null;
+  const tiles=type=='chi'?[...use,t].sort(asc):[...use,t];
+  G.melds[q].push({type,t,tiles});
+  h.sort(asc);G.fresh=false;
+  G.msg=N[q]+{chi:'吃',pon:'碰',gang:'槓'}[type]+'了 '+nm(t);
+  if(type=='gang')return turn(q,true);
+  G.cur=q;
+  if(q===0){G.phase='discard';G.sel=-1;G.actions=[];G.msg+='，請選一張牌打出去';render()}
+  else{render();later(()=>aiDiscard(q))}
+}
+function aiDiscard(q){
+  const h=G.hands[q],c=cnt(h);let best=h[0],bs=1e9;
+  h.forEach(t=>{
+    let s=(c[t]-1)*4;
+    if(t<27){const r=t%9;
+      if(r>0&&c[t-1])s+=2;if(r<8&&c[t+1])s+=2;if(r>1&&c[t-2])s+=1;if(r<7&&c[t+2])s+=1;if(r>0&&r<8)s+=.5}
+    s+=Math.random()*.9;
+    if(s<bs){bs=s;best=t}
+  });
+  discard(q,best);
+}
+function end(ws){
+  G.over=true;G.actions=[];G.phase='';G.msg='';
+  $('ovt').textContent=!ws.length?'流局，沒有人胡牌':ws.includes(0)?'🎉 你胡牌了！':ws.map(q=>N[q]).join('、')+' 胡牌了';
+  render();$('ov').hidden=false;
+}
 
-    <!-- Message Modal -->
-    <div id="message-modal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white text-gray-800 p-10 rounded-3xl max-w-md w-full text-center shadow-2xl transform transition-transform scale-95">
-            <h2 id="modal-title" class="text-4xl font-extrabold text-red-600 mb-6">恭喜胡牌！</h2>
-            <p id="modal-desc" class="text-xl mb-8 text-gray-600">奶奶好棒！您的頭腦非常清晰喔！</p>
-            <button onclick="startNewGame()" class="btn-large text-2xl w-full py-4 rounded-xl font-bold">
-                再來一局
-            </button>
-            <button onclick="closeModal()" id="modal-cancel" class="mt-4 text-gray-500 hover:text-gray-800 text-lg w-full py-2">
-                取消
-            </button>
-        </div>
-    </div>
-
-    <script>
-        // --- Tile Definitions ---
-        const SUITS = [
-            { type: 'M', chars: ['🀇','🀈','🀉','🀊','🀋','🀌','🀍','🀎','🀏'], base: 300 }, // 萬 (Characters)
-            { type: 'S', chars: ['🀐','🀑','🀒','🀓','🀔','🀕','🀖','🀗','🀘'], base: 400 }, // 索 (Bamboos)
-            { type: 'P', chars: ['🀙','🀚','🀛','🀜','🀝','🀞','🀟','🀠','🀡'], base: 500 }, // 筒 (Dots)
-            { type: 'W', chars: ['🀀','🀁','🀂','🀃'], base: 100 }, // 風 (Winds: E, S, W, N)
-            { type: 'D', chars: ['🀄','🀅','🀆'], base: 200 }  // 元 (Dragons: Red, Green, White)
-        ];
-
-        // --- Game State ---
-        let deck = [];
-        let playerHand = [];
-        let botHands = [[], [], []];
-        let discards = [];
-        
-        let turn = 0; // 0 = Player, 1 = Bot1, 2 = Bot2, 3 = Bot3
-        let phase = 'draw'; // 'draw' | 'discard' | 'wait'
-        let justDrawnTileId = null;
-
-        // --- DOM Elements ---
-        const elDeckCount = document.getElementById('deck-count');
-        const elDiscardPile = document.getElementById('discard-pile');
-        const elPlayerHand = document.getElementById('player-hand');
-        const elStatusText = document.getElementById('status-text');
-        const btnDraw = document.getElementById('btn-draw');
-        const btnWin = document.getElementById('btn-win');
-        const modal = document.getElementById('message-modal');
-
-        function buildDeck() {
-            let newDeck = [];
-            let idCounter = 0;
-            SUITS.forEach(suit => {
-                suit.chars.forEach((char, index) => {
-                    for(let i=0; i<4; i++) {
-                        newDeck.push({
-                            id: idCounter++,
-                            char: char,
-                            type: suit.type,
-                            val: index + 1,
-                            sortVal: suit.base + index + 1
-                        });
-                    }
-                });
-            });
-            return newDeck;
-        }
-
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-
-        function sortHand(hand) {
-            hand.sort((a, b) => a.sortVal - b.sortVal);
-        }
-
-        function startNewGame() {
-            closeModal();
-            deck = buildDeck();
-            shuffle(deck);
-            discards = [];
-            justDrawnTileId = null;
-            
-            // Deal 16 tiles to everyone
-            playerHand = deck.splice(0, 16);
-            sortHand(playerHand);
-            
-            botHands = [
-                deck.splice(0, 16),
-                deck.splice(0, 16),
-                deck.splice(0, 16)
-            ];
-
-            turn = 0;
-            phase = 'draw';
-            updateUI();
-        }
-
-        function playerDraw() {
-            if (turn !== 0 || phase !== 'draw' || deck.length === 0) return;
-            
-            const tile = deck.pop();
-            playerHand.push(tile);
-            justDrawnTileId = tile.id;
-            
-            phase = 'discard';
-            updateUI();
-            
-            // Auto scroll discard pile to bottom if needed
-            elDiscardPile.scrollTop = elDiscardPile.scrollHeight;
-        }
-
-        function playerDiscard(tileId) {
-            if (turn !== 0 || phase !== 'discard') return;
-
-            const index = playerHand.findIndex(t => t.id === tileId);
-            if (index === -1) return;
-
-            const tile = playerHand.splice(index, 1)[0];
-            discards.push(tile);
-            justDrawnTileId = null;
-            
-            sortHand(playerHand);
-            
-            phase = 'wait';
-            turn = 1;
-            updateUI();
-            
-            // Trigger Bots
-            setTimeout(botTurn, 800);
-        }
-
-        function botTurn() {
-            if (deck.length === 0) {
-                checkGameOver();
-                return;
-            }
-
-            const botIndex = turn - 1;
-            
-            // Bot Draws
-            botHands[botIndex].push(deck.pop());
-            
-            // Bot Discards (Completely random for simplicity)
-            const randDiscardIndex = Math.floor(Math.random() * botHands[botIndex].length);
-            const discardedTile = botHands[botIndex].splice(randDiscardIndex, 1)[0];
-            discards.push(discardedTile);
-
-            // Move to next turn
-            turn = (turn + 1) % 4;
-            updateUI();
-            elDiscardPile.scrollTop = elDiscardPile.scrollHeight;
-
-            if (turn === 0) {
-                // Back to player
-                phase = 'draw';
-                checkGameOver();
-                updateUI();
-            } else {
-                // Next bot
-                setTimeout(botTurn, 800);
-            }
-        }
-
-        function updateUI() {
-            // 1. Update Deck Count
-            elDeckCount.innerText = deck.length;
-
-            // 2. Update Status Banner & Buttons
-            if (turn === 0) {
-                if (phase === 'draw') {
-                    elStatusText.innerText = "你的回合：請點擊【摸牌】";
-                    elStatusText.className = "text-3xl md:text-4xl font-extrabold tracking-wide text-green-300 drop-shadow-md";
-                    btnDraw.classList.remove('hidden', 'btn-disabled');
-                    btnDraw.classList.add('pulse-anim');
-                    btnDraw.disabled = false;
-                    btnWin.classList.add('hidden');
-                } else if (phase === 'discard') {
-                    elStatusText.innerText = "請選擇並點擊一張牌打出";
-                    elStatusText.className = "text-3xl md:text-4xl font-extrabold tracking-wide text-yellow-300 drop-shadow-md";
-                    btnDraw.classList.add('btn-disabled');
-                    btnDraw.classList.remove('pulse-anim');
-                    btnDraw.disabled = true;
-                    btnWin.classList.remove('hidden'); // Show Win button during discard phase
-                }
-            } else {
-                elStatusText.innerText = `電腦 ${turn} 思考中...`;
-                elStatusText.className = "text-3xl md:text-4xl font-extrabold tracking-wide text-gray-300 drop-shadow-md";
-                btnDraw.classList.add('btn-disabled');
-                btnDraw.classList.remove('pulse-anim');
-                btnDraw.disabled = true;
-                btnWin.classList.add('hidden');
-            }
-
-            // 3. Render Discards
-            elDiscardPile.innerHTML = '';
-            discards.forEach((tile, index) => {
-                const isLatest = index === discards.length - 1;
-                const div = document.createElement('div');
-                div.className = `tile tile-font discard-tile ${isLatest ? 'discard-latest' : ''}`;
-                div.innerText = tile.char;
-                elDiscardPile.appendChild(div);
-            });
-
-            // 4. Render Player Hand
-            elPlayerHand.innerHTML = '';
-            playerHand.forEach((tile) => {
-                const isJustDrawn = tile.id === justDrawnTileId;
-                const div = document.createElement('div');
-                
-                // Add margin to visually separate the newly drawn tile
-                let extraMargin = isJustDrawn ? 'ml-[2vw]' : '';
-                let interactiveClass = (phase === 'discard' && turn === 0) ? 'discard-mode' : '';
-                
-                div.className = `tile tile-font player-tile ${extraMargin} ${interactiveClass}`;
-                div.innerText = tile.char;
-                
-                if (phase === 'discard' && turn === 0) {
-                    // Use onmousedown/ontouchstart for faster iPad response
-                    div.onclick = () => playerDiscard(tile.id);
-                }
-                
-                elPlayerHand.appendChild(div);
-            });
-        }
-
-        function checkGameOver() {
-            if (deck.length === 0) {
-                showModal('牌局結束', '大家平手！再玩一局吧！', false);
-            }
-        }
-
-        function declareWin() {
-            showModal('恭喜胡牌！', '奶奶好厲害！您的頭腦非常清晰喔！繼續保持！', false);
-        }
-
-        function confirmRestart() {
-            showModal('重新開始', '確定要放棄這局，重新洗牌嗎？', true);
-        }
-
-        function showModal(title, desc, showCancel) {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-title').className = title === '恭喜胡牌！' 
-                ? 'text-5xl font-extrabold text-red-600 mb-6' 
-                : 'text-4xl font-bold text-gray-800 mb-6';
-            document.getElementById('modal-desc').innerText = desc;
-            
-            if (showCancel) {
-                document.getElementById('modal-cancel').classList.remove('hidden');
-            } else {
-                document.getElementById('modal-cancel').classList.add('hidden');
-            }
-            
-            modal.classList.remove('hidden');
-        }
-
-        function closeModal() {
-            modal.classList.add('hidden');
-        }
-
-        // Start the first game on load
-        window.onload = () => {
-            startNewGame();
-        };
-    </script>
+/* ===== 畫面 ===== */
+function meldsHTML(p){
+  return G.flowers[p].length?`<span class="meld">${G.flowers[p].map(t=>T(t)).join('')}</span>`:''
+    +'';
+}
+function panel(p){
+  const m=G.melds[p].map(x=>`<span class="meld">${x.tiles.map(t=>T(t)).join('')}</span>`).join('');
+  const h=G.over?G.hands[p].map(t=>T(t)).join(''):G.hands[p].map(B).join('');
+  return `<div class="nm ${G.cur==p&&!G.over?'turn':''}">${N[p]}（${G.hands[p].length}張）</div>`
+    +`<div class="row">${meldsHTML(p)}${m}</div><div class="row">${h}</div>`;
+}
+function render(){
+  $('wall').textContent=G.wall.length;
+  $('msg').textContent=G.msg;
+  [1,2,3].forEach(p=>$('p'+p).innerHTML=panel(p));
+  $('pool').innerHTML=G.pool.map((d,i)=>T(d.t,i===G.last?'last':'')).join('');
+  $('melds0').innerHTML=meldsHTML(0)+G.melds[0].map(x=>`<span class="meld">${x.tiles.map(t=>T(t)).join('')}</span>`).join('');
+  const h=G.hands[0],L=h.length;
+  $('hand').className=G.phase=='discard'&&!G.over?'can':'';
+  $('hand').innerHTML=h.map((t,i)=>T(t,(G.fresh&&i==L-1?'fresh ':'')+(G.sel===i?'sel':''),i)).join('');
+  $('acts').innerHTML=G.actions.map((a,i)=>`<button onclick="A(${i})">${a[0]}</button>`).join('');
+}
+$('hand').onclick=e=>{
+  const el=e.target.closest('.tile');
+  if(!el||G.phase!='discard'||G.cur||G.over)return;
+  const i=+el.dataset.i;
+  if(G.sel===i)discard(0,G.hands[0][i]);        // 第二次點同一張 → 打出去
+  else{G.sel=i;G.msg='再點一次「'+nm(G.hands[0][i])+'」就打出去';render()}
+};
+document.documentElement.style.setProperty('--hh',CONFIG.handTileHeightVh+'vh');
+newGame();
+</script>
 </body>
 </html>

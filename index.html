@@ -14,18 +14,22 @@ html,body{height:100%;margin:0;background:var(--felt);color:#fff;font-family:"Pi
 #app{height:100dvh;display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 header{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 12px;background:var(--dark);font-size:18px}
 header button{font-size:16px;padding:6px 14px}
-main{flex:1;min-height:0;display:grid;grid-template-areas:"t t t" "l c r";grid-template-rows:auto 1fr;grid-template-columns:minmax(70px,18vw) 1fr minmax(70px,18vw);gap:6px;padding:6px}
+main{flex:1;min-height:0;display:grid;grid-template-areas:"t t t" "l c r";grid-template-rows:auto 1fr;grid-template-columns:minmax(110px,22vw) 1fr minmax(110px,22vw);gap:6px;padding:6px}
 .top{grid-area:t}.left{grid-area:l}.right{grid-area:r}#center{grid-area:c}
-.opp{--th:clamp(20px,3.6vh,34px);background:rgba(0,0,0,.18);border-radius:10px;padding:6px;min-width:0;overflow:hidden}
+.opp{--th:calc(var(--hh)*.5);background:rgba(0,0,0,.18);border-radius:10px;padding:6px;min-width:0;overflow:auto;border-left:8px solid var(--pc)}
+.opp.turn,footer.turn{animation:glow 1s ease-in-out infinite alternate}
+@keyframes glow{from{box-shadow:0 0 0 3px var(--pc)}to{box-shadow:0 0 16px 8px var(--pc)}}
 .nm{font-size:16px;margin-bottom:4px}.nm.turn{color:var(--gold);font-weight:700}
 .row{display:flex;flex-wrap:wrap;gap:2px 6px;margin-bottom:3px}
 .meld{display:inline-flex;gap:1px}
-#center{--th:clamp(28px,5vh,46px);background:rgba(0,0,0,.28);border-radius:10px;padding:8px;overflow:auto}
-#pool{display:flex;flex-wrap:wrap;gap:3px;align-content:flex-start}
-footer{background:var(--dark);padding:6px 8px 8px}
+#center{--th:calc(var(--hh)*.5);background:rgba(0,0,0,.28);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:8px;min-height:0;overflow:hidden}
+#turn{flex:none;text-align:center;font-weight:700;font-size:clamp(22px,3.6vh,36px);padding:6px 12px;border-radius:12px;color:#1a1a1a}
+#pool{flex:1;min-height:0;overflow:auto;display:flex;flex-wrap:wrap;gap:3px;align-content:flex-start}
+footer{background:var(--dark);padding:6px 8px 8px;border-top:8px solid var(--pc)}
 #msg{min-height:1.4em;text-align:center;color:var(--gold);font-size:clamp(18px,2.6vh,26px);margin-bottom:4px}
 #acts{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:6px}
-#acts button{font-size:clamp(20px,3vh,28px);min-height:52px;padding:8px 24px;background:var(--gold);color:#3a2a00;font-weight:700}
+#acts button{display:inline-flex;align-items:center;gap:10px;font-size:clamp(20px,3vh,28px);min-height:52px;padding:8px 20px;background:var(--gold);color:#3a2a00;font-weight:700}
+#acts .pv{--th:calc(var(--hh)*.45);display:inline-flex;gap:1px}
 button{border:0;border-radius:12px;font-family:inherit;background:#e8e1c8;color:#222;cursor:pointer}
 #melds0{--th:clamp(26px,5vh,44px);display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;margin-bottom:4px}
 #hand{--th:var(--hh);display:flex;flex-wrap:wrap;justify-content:center;gap:3px}
@@ -36,6 +40,10 @@ button{border:0;border-radius:12px;font-family:inherit;background:#e8e1c8;color:
 .tx i{font-style:normal;font-size:.62em}
 .cs0,.zr{color:#c0281c}.cs1{color:#1f4fa8}.cs2,.zg{color:#1c7a3a}.zk{color:#222}.fl{color:#8a3aa8;background:#fff6ea}
 .back{background:repeating-linear-gradient(45deg,#2a7a52,#2a7a52 4px,#236644 4px,#236644 8px);border-color:#14402a;box-shadow:none}
+.ghost{visibility:hidden}
+.pc0{box-shadow:inset 0 calc(var(--th)*-.1) 0 var(--c0)}.pc1{box-shadow:inset 0 calc(var(--th)*-.1) 0 var(--c1)}.pc2{box-shadow:inset 0 calc(var(--th)*-.1) 0 var(--c2)}.pc3{box-shadow:inset 0 calc(var(--th)*-.1) 0 var(--c3)}
+.dot{display:inline-block;width:.8em;height:.8em;border-radius:50%;margin-right:6px;vertical-align:-1px}
+#fly{position:fixed;inset:0;pointer-events:none;z-index:8}
 .last{outline:3px solid var(--gold);outline-offset:-1px}
 #hand .fresh{margin-left:calc(var(--th)*.3)}
 #hand.can .tile{cursor:pointer}
@@ -53,28 +61,31 @@ button{border:0;border-radius:12px;font-family:inherit;background:#e8e1c8;color:
   <main>
     <section id="p2" class="opp top"></section>
     <section id="p3" class="opp left"></section>
-    <section id="center"><div id="pool"></div></section>
+    <section id="center"><div id="turn"></div><div id="pool"></div></section>
     <section id="p1" class="opp right"></section>
   </main>
-  <footer>
+  <footer id="foot">
     <div id="msg"></div>
     <div id="acts"></div>
     <div id="melds0"></div>
     <div id="hand"></div>
   </footer>
 </div>
+<div id="fly"></div>
 <div id="ov" hidden><div><h1 id="ovt"></h1><button onclick="newGame()">再玩一局</button><button onclick="$('ov').hidden=true">看一下牌面</button></div></div>
 
 <script>
 /* ===== 設定（之後要做設定畫面，就是改這個物件）===== */
 const CONFIG={
   handTileHeightVh:10,   // 自己手牌高度占螢幕高度的 %
-  aiDelayMs:800,         // 電腦出牌的等待時間（毫秒）
+  discardAnimMs:1100,    // 打牌動畫總時間（毫秒），設 0 就沒有動畫
+  aiDelayMs:1800,        // 電腦思考的等待時間（毫秒），每位電腦出一張牌會等兩次
   useFlowers:true,       // 是否使用花牌（補花）
   allowRon:false,        // 能否胡別人打出的牌（放槍胡）。false = 只能自摸
   multiRon:true,         // allowRon 開啟時，多人胡同一張是否都算胡
   aiChiRate:.3, aiPonRate:.6, aiGangRate:.5,
   playerNames:['你','右家','對家','左家'],
+  playerColors:['#4fc3f7','#ff8a65','#ce93d8','#81c784'], // 各玩家代表色（面板邊框、棄牌底線、提示都用這組）
   /* 麻將圖片：把 useImages 改 true，圖片放在 imageDir 資料夾。
      檔名：萬 m1~m9、筒 p1~p9、條 s1~s9、
            字 z1~z7（東南西北中發白）、花 f1~f8（春夏秋冬梅蘭竹菊）、牌背 back
@@ -136,7 +147,7 @@ function newGame(){
   for(let p=0;p<4;p++){const h=G.hands[p];let i;
     while((i=h.findIndex(t=>t>=34))>=0){G.flowers[p].push(h.splice(i,1)[0]);h.push(G.wall.shift())}
     h.sort(asc)}
-  $('ov').hidden=true;
+  $('ov').hidden=true;$('fly').innerHTML='';
   turn(0,false);
 }
 function draw(p,back){ // back=true 從牌牆尾端補牌；摸到花自動補花
@@ -162,8 +173,8 @@ function humanTurn(){
   G.phase='discard';
   const h=G.hands[0],c=cnt(h),acts=[],w=canWin(h);
   if(w)acts.push(['🎉 胡牌！',()=>end([0])]);
-  for(let t=0;t<34;t++)if(c[t]==4)acts.push(['暗槓 '+nm(t),()=>kong(0,t,'an')]);
-  G.melds[0].forEach(m=>{if(m.type=='pon'&&c[m.t]>0)acts.push(['加槓 '+nm(m.t),()=>kong(0,m.t,'add')])});
+  for(let t=0;t<34;t++)if(c[t]==4)acts.push(['暗槓',()=>kong(0,t,'an'),[t,t,t,t]]);
+  G.melds[0].forEach(m=>{if(m.type=='pon'&&c[m.t]>0)acts.push(['加槓',()=>kong(0,m.t,'add'),[m.t,m.t,m.t,m.t]])});
   set(acts,w?'你可以胡牌了！':'輪到你了，點一張牌選取');
   render();
 }
@@ -173,11 +184,40 @@ function kong(p,t,kind){
   else{h.splice(h.indexOf(t),1);const m=G.melds[p].find(m=>m.type=='pon'&&m.t==t);m.type='gang';m.tiles.push(t)}
   turn(p,true);
 }
-function discard(p,t){
-  const h=G.hands[p];h.splice(h.indexOf(t),1);h.sort(asc);
+function srcRect(p,i){ // 牌飛出去的起點：自己=被點的那張牌，電腦=它手牌區最後一張牌背
+  const el=p?[...$('p'+p).querySelectorAll('.row:last-child .tile')].pop():$('hand').children[i];
+  return (el||$('p'+p)).getBoundingClientRect();
+}
+function fly(p,t,src,done){ // 手牌 → 畫面中央放大 → 縮小飛進棄牌池
+  const D=CONFIG.discardAnimMs,g=G;
+  if(!D)return done();
+  const pe=$('pool').lastElementChild;pe.scrollIntoView({block:'nearest'});
+  const dst=pe.getBoundingClientRect();
+  const H=Math.min(innerHeight*.3,innerWidth*.5),W=H*.74;
+  const f=$('fly');f.innerHTML=T(t);
+  const el=f.firstChild;
+  el.style.cssText=`--th:${H}px;position:fixed;left:0;top:0;transform-origin:0 0;filter:drop-shadow(0 10px 18px rgba(0,0,0,.55))`;
+  const tag=document.createElement('div');
+  tag.textContent=N[p]+'打出';
+  tag.style.cssText=`position:fixed;left:50%;top:${(innerHeight-H)/2-12}px;transform:translate(-50%,-100%);padding:6px 22px;border-radius:999px;font-size:clamp(22px,3.8vh,38px);font-weight:700;background:${CONFIG.playerColors[p]};color:#1a1a1a;white-space:nowrap;opacity:0`;
+  f.appendChild(tag);
+  tag.animate([{opacity:0,offset:0},{opacity:1,offset:.25},{opacity:1,offset:.65},{opacity:0,offset:.8},{opacity:0,offset:1}],{duration:D,fill:'forwards'});
+  const tr=(r,sc)=>`translate(${r.left}px,${r.top}px) scale(${sc})`;
+  const mid=`translate(${(innerWidth-W)/2}px,${(innerHeight-H)/2}px) scale(1)`;
+  el.animate([
+    {transform:tr(src,src.height/H),offset:0,easing:'ease-out'},
+    {transform:mid,offset:.3},
+    {transform:mid,offset:.65,easing:'ease-in'},
+    {transform:tr(dst,dst.height/H),offset:1}
+  ],{duration:D,fill:'forwards'}).onfinish=()=>{el.remove();tag.remove();if(g===G)done()};
+}
+function discard(p,t,i){
+  const h=G.hands[p],src=srcRect(p,i);
+  h.splice(h.indexOf(t),1);h.sort(asc);
   G.pool.push({t,p});G.last=G.pool.length-1;G.fresh=false;G.phase='';G.sel=-1;
   set([],N[p]+'打出 '+nm(t));
-  claims(p,t);
+  G.busy=true;render();               // 棄牌池最後一張先隱藏，等動畫飛到才出現
+  fly(p,t,src,()=>{G.busy=false;render();claims(p,t)});
 }
 function claims(p,t){
   if(CONFIG.allowRon){
@@ -195,9 +235,9 @@ function claims(p,t){
 function pons(p,t){
   const h=G.hands[0],c=cnt(h),acts=[];
   if(p!==0){
-    if(c[t]>=3)acts.push(['槓 '+nm(t),()=>claim(0,'gang',t,[t,t,t])]);
-    if(c[t]>=2)acts.push(['碰 '+nm(t),()=>claim(0,'pon',t,[t,t])]);
-    if(p==3)chiOpts(h,t).forEach(o=>acts.push(['吃 '+o.map(nm).join(' '),()=>claim(0,'chi',t,o)]));
+    if(c[t]>=3)acts.push(['槓',()=>claim(0,'gang',t,[t,t,t]),[t,t,t,t]]);
+    if(c[t]>=2)acts.push(['碰',()=>claim(0,'pon',t,[t,t]),[t,t,t]]);
+    if(p==3)chiOpts(h,t).forEach(o=>acts.push(['吃',()=>claim(0,'chi',t,o),[...o,t].sort(asc)]));
   }
   if(acts.length){acts.push(['過',()=>aiClaims(p,t)]);set(acts,N[p]+'打出 '+nm(t)+'，要吃、碰或槓嗎？');return render()}
   aiClaims(p,t);
@@ -211,7 +251,7 @@ function aiClaims(p,t){
   }
   const q=(p+1)%4;
   if(q){const o=chiOpts(G.hands[q],t);if(o.length&&Math.random()<C.aiChiRate)return claim(q,'chi',t,o[Math.random()*o.length|0])}
-  render();later(()=>turn((p+1)%4,false));
+  G.cur=(p+1)%4;render();later(()=>turn((p+1)%4,false));
 }
 function claim(q,type,t,use){
   const h=G.hands[q];
@@ -251,27 +291,37 @@ function meldsHTML(p){
 function panel(p){
   const m=G.melds[p].map(x=>`<span class="meld">${x.tiles.map(t=>T(t)).join('')}</span>`).join('');
   const h=G.over?G.hands[p].map(t=>T(t)).join(''):G.hands[p].map(B).join('');
-  return `<div class="nm ${G.cur==p&&!G.over?'turn':''}">${N[p]}（${G.hands[p].length}張）</div>`
+  return `<div class="nm"><span class="dot" style="background:${CONFIG.playerColors[p]}"></span>${N[p]}（${G.hands[p].length}張）</div>`
     +`<div class="row">${meldsHTML(p)}${m}</div><div class="row">${h}</div>`;
 }
 function render(){
   $('wall').textContent=G.wall.length;
   $('msg').textContent=G.msg;
-  [1,2,3].forEach(p=>$('p'+p).innerHTML=panel(p));
-  $('pool').innerHTML=G.pool.map((d,i)=>T(d.t,i===G.last?'last':'')).join('');
+  [1,2,3].forEach(p=>{const e=$('p'+p);e.classList.toggle('turn',G.cur==p&&!G.over);e.innerHTML=panel(p)});
+  $('foot').classList.toggle('turn',G.cur===0&&!G.over);
+  const tb=$('turn'),cl=CONFIG.playerColors;
+  if(G.over)tb.style.display='none';
+  else{
+    tb.style.display='';
+    const ask=G.actions.length&&G.phase!='discard'&&!G.busy;
+    tb.style.background=cl[ask?0:G.cur];
+    tb.textContent=ask?'請你選擇':G.busy?(G.cur?N[G.cur]:'你')+'打牌中':G.cur?'輪到「'+N[G.cur]+'」出牌':'輪到你出牌';
+  }
+  $('pool').innerHTML=G.pool.map((d,i)=>T(d.t,'pc'+d.p+' '+(i===G.last?'last ':'')+(G.busy&&i==G.pool.length-1?'ghost':''))).join('');
   $('melds0').innerHTML=meldsHTML(0)+G.melds[0].map(x=>`<span class="meld">${x.tiles.map(t=>T(t)).join('')}</span>`).join('');
   const h=G.hands[0],L=h.length;
   $('hand').className=G.phase=='discard'&&!G.over?'can':'';
   $('hand').innerHTML=h.map((t,i)=>T(t,(G.fresh&&i==L-1?'fresh ':'')+(G.sel===i?'sel':''),i)).join('');
-  $('acts').innerHTML=G.actions.map((a,i)=>`<button onclick="A(${i})">${a[0]}</button>`).join('');
+  $('acts').innerHTML=G.actions.map((a,i)=>`<button onclick="A(${i})">${a[0]}${a[2]?`<span class="pv">${a[2].map(t=>T(t)).join('')}</span>`:''}</button>`).join('');
 }
 $('hand').onclick=e=>{
   const el=e.target.closest('.tile');
   if(!el||G.phase!='discard'||G.cur||G.over)return;
   const i=+el.dataset.i;
-  if(G.sel===i)discard(0,G.hands[0][i]);        // 第二次點同一張 → 打出去
+  if(G.sel===i)discard(0,G.hands[0][i],i);        // 第二次點同一張 → 打出去
   else{G.sel=i;G.msg='再點一次「'+nm(G.hands[0][i])+'」就打出去';render()}
 };
+CONFIG.playerColors.forEach((c,i)=>{document.documentElement.style.setProperty('--c'+i,c);$(i?'p'+i:'foot').style.setProperty('--pc',c)});
 document.documentElement.style.setProperty('--hh',CONFIG.handTileHeightVh+'vh');
 newGame();
 </script>
